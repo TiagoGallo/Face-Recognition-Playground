@@ -11,7 +11,7 @@ def load_ConvNext(pretrained='ImageNet', checkpoint_path=None, features_dim=512,
         Load the model
     '''
     model_convNextB = ConvNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], num_classes=features_dim)
-    print(checkpoint_path)
+    
     if checkpoint_path is not None:
         checkpoint = torch.load(checkpoint_path)
         
