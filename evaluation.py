@@ -4,15 +4,29 @@ import torch.nn.functional as F
 import numpy as np
 from sklearn.metrics import roc_auc_score, average_precision_score
 from tqdm import tqdm
+from prettytable import PrettyTable
 
 def eval_model(test_loader, face_rec_model):
+    table = PrettyTable(['Dataset', 'ACC', 'AUC', 'mAP'])
     face_rec_model.eval()
+
+    if isinstance(test_loader, list):
+        for loader in test_loader:
+            auc, mAP, acc = evaluation(loader, face_rec_model, loader.dataset.name)
+            table.add_row([loader.dataset.name, f'{acc*100:.2f}%', f'{auc*100:.2f}%', f'{mAP*100:.2f}%'])
+    else:
+        auc, mAP, acc = evaluation(test_loader, face_rec_model, test_loader.dataset.name)
+        table.add_row([test_loader.dataset.name, f'{acc*100:.2f}%', f'{auc*100:.2f}%', f'{mAP*100:.2f}%'])
+
+    print(table)
+
+def evaluation(test_loader, face_rec_model, dataset_name=None):
     features = []
 
     with torch.no_grad():
         for images in tqdm(test_loader,
                             total=len(test_loader),
-                            desc=f'Evaluating'):
+                            desc=f'Evaluating Dataset {dataset_name if dataset_name is not None else ""}'):
             images = images.cuda()
             feat = face_rec_model(images)
             feat = feat.data.cpu()
@@ -33,12 +47,12 @@ def eval_model(test_loader, face_rec_model):
     mAP = average_precision_score(gt, feat_dist)
     best_acc, best_thres = calculate_accuracy(feat_dist, gt)
 
-    print(f'ROC-AUC: {roc_auc*100:.2f}%\tmAP: {mAP*100:.2f}%\tAcc: {best_acc*100:.2f}% at threshold {best_thres:.2f}\n')
+    return roc_auc, mAP, best_acc
 
 def calculate_accuracy(dist, actual_issame):
     best_acc = 0
     best_threshold = 0
-    for threshold in np.arange(0, 4, 0.001):
+    for threshold in np.arange(0, 1, 0.001):
         predict_issame = np.greater(dist, threshold)
         tp = np.sum(np.logical_and(predict_issame, actual_issame))
         # fp = np.sum(np.logical_and(predict_issame, np.logical_not(actual_issame)))
