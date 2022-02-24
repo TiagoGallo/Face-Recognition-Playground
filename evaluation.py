@@ -10,15 +10,21 @@ def eval_model(test_loader, face_rec_model):
     table = PrettyTable(['Dataset', 'ACC', 'AUC', 'mAP'])
     face_rec_model.eval()
 
+    accuracies = []
+
     if isinstance(test_loader, list):
         for loader in test_loader:
             auc, mAP, acc = evaluation(loader, face_rec_model, loader.dataset.name)
+            accuracies.append(acc)
             table.add_row([loader.dataset.name, f'{acc*100:.2f}%', f'{auc*100:.2f}%', f'{mAP*100:.2f}%'])
     else:
         auc, mAP, acc = evaluation(test_loader, face_rec_model, test_loader.dataset.name)
+        accuracies.append(acc)
         table.add_row([test_loader.dataset.name, f'{acc*100:.2f}%', f'{auc*100:.2f}%', f'{mAP*100:.2f}%'])
 
     print(table)
+
+    return np.average(accuracies)
 
 def evaluation(test_loader, face_rec_model, dataset_name=None):
     features = []

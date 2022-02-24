@@ -11,15 +11,15 @@ def load_model(model_arch='ConvNext-b', **kwargs):
     elif model_arch == 'mobilefacenet':
         model = load_mobile_facenet(**kwargs)
     elif model_arch == 'iresnet18':
-        model = iresnet18()
+        model = iresnet18(num_features=kwargs['features_dim'])
     elif model_arch == 'iresnet34':
-        model = iresnet34()
+        model = iresnet34(num_features=kwargs['features_dim'])
     elif model_arch == 'iresnet50':
-        model = iresnet50()
+        model = iresnet50(num_features=kwargs['features_dim'])
     elif model_arch == 'iresnet100':
-        model = iresnet100()
+        model = iresnet100(num_features=kwargs['features_dim'])
     elif model_arch == 'iresnet200':
-        model = iresnet200()
+        model = iresnet200(num_features=kwargs['features_dim'])
 
     model.cuda()
     model.train()
